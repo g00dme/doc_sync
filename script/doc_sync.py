@@ -31,9 +31,12 @@ def clean_spaces(string):
     return string
     
 def main():
-    print(os.getcwd())
+    logging.basicConfig(filename=logs.log)
+    logger = logging.getLogger()
+
     path=Path('/mnt/c/Users/user/Desktop/учет МЕ Армада')
     path_tem=Path('/home/jul/projects/Sync docs/templates')
+
     if len(sys.argv)>1:
         main=(path / '554.727' / 'накладные' / 'НАКЛАДНАЯ Чистая 2.docx'
                if sys.argv[1]=='2' 
@@ -55,8 +58,6 @@ def main():
     df=df.drop([0])
     df=df.drop(df.columns[9:14],axis=1)
 
-
-
     cars={
         'ООО «Армада» маз г.р.з. у 075кв 138 ':'Маз № У075КВ 138',
         'ООО «Армада» шангси г.р.з. а 595мт 03  ':'Шангси № А595МТ 03',
@@ -75,10 +76,13 @@ def main():
     for index,row in need.iterrows():
         car=cars[clean_spaces(row['Получатель'])]
         date=row['Дата записи'].strftime('%d.%m.%Y')
-        print(date,row['№        документа'],car)
+        number=row['№        документа']
+        logger.info(" ".join([date,number,car]))
+
         add_to_file(main,templ,
-            {'number':f'{row['№        документа']}',
-             'date':f'{date}','car':f'{car}'})
+            {'number':f'{number}',
+             'date':f'{date}',
+             'car':f'{car}'})
 
 if __name__ == "__main__":
     main()
