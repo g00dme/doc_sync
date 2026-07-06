@@ -31,8 +31,13 @@ def clean_spaces(string):
     return string
     
 def main():
-    logging.basicConfig(filename=logs.log)
+    logging.basicConfig(filename='logs.log', level=logging.INFO)
     logger = logging.getLogger()
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+
+    logger.addHandler(console_handler)
 
     path=Path('/mnt/c/Users/user/Desktop/учет МЕ Армада')
     path_tem=Path('/home/jul/projects/Sync docs/templates')
@@ -59,32 +64,33 @@ def main():
     df=df.drop(df.columns[9:14],axis=1)
 
     cars={
-        'ООО «Армада» маз г.р.з. у 075кв 138 ':'Маз № У075КВ 138',
-        'ООО «Армада» шангси г.р.з. а 595мт 03  ':'Шангси № А595МТ 03',
-        'ООО «Армада» хино г.р.з. в 559вр 03  ':'Хино.№ В559ВР 03',
+        'ООО «Армада» маз г.р.з. у 075кв 138':'Маз № У075КВ 138',
+        'ООО «Армада» шангси г.р.з. а 595мт 03':'Шангси № А595МТ 03',
+        'ООО «Армада» хино г.р.з. в 559вр 03':'Хино.№ В559ВР 03',
         'ООО «Армада» шахман г.р.з. с 389кн 57':'Шахман № С389КН 57',
         'ООО «Армада» фав г.р.з. е152вк 57':'Фав № Е152ВК 57',
-        'ООО «Армада» камаз г.р.з. н 870кт 03  ':'Камаз № Н870КТ 03',
+        'ООО «Армада» камаз г.р.з. н 870кт 03':'Камаз № Н870КТ 03',
         'ООО «Армада» ивеко г.р.з. а700на 03':'Ивеко № А700НА 03',
         'ООО «Армада» мицубиси г.р.з. р 888вт 38':'Мицубиси № Р888ВТ 38',
-        'ООО «Армада» вольво г.р.з. в 543ев 03 ':'Вольво № В543ЕВ 03',
+        'ООО «Армада» вольво г.р.з. в 543ев 03':'Вольво № В543ЕВ 03',
         'ООО «Армада» камаз г.р.з. х 633рм 125':'Камаз № Х633РМ 125'
     }
 
     need=df[df["Дата записи"].isin(df['Дата записи'].unique()[-back:])]
 
+    logger.info('----------------Start----------------')
     for index,row in need.iterrows():
         car=cars[clean_spaces(row['Получатель'])]
         date=row['Дата записи'].strftime('%d.%m.%Y')
         number=row['№        документа']
         logger.info(" ".join([date,number,car]))
+        print(date,number,car)
 
         add_to_file(main,templ,
             {'number':f'{number}',
              'date':f'{date}',
              'car':f'{car}'})
-
+    logger.info('----------------Finish--------------')
 if __name__ == "__main__":
     main()
 
-print('hello world')
