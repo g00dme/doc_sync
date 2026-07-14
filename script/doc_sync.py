@@ -31,8 +31,8 @@ def clean_spaces(string):
     return string
     
 def main():
-    logging.basicConfig(filename='logs.log', level=logging.INFO)
-    logger = logging.getLogger()
+    logging.basicConfig(filename='logs.log', level=logging.INFO,format='%(asctime)s %(levelname)s: %(message)s')
+    logger = logging.getLogger(__name__)
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
