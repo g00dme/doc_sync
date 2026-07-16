@@ -1,0 +1,8 @@
+*.log
+templates/
+*.ipynb
+*.docx
+*.xlsx
+.venv/
+*.json
+.envrc
