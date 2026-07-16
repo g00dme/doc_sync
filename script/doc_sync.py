@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import docx
 from docxtpl import DocxTemplate
 from docxcompose.composer import Composer
@@ -26,10 +27,65 @@ def add_to_file(mainP, templ,context):
     main.save(mainP)
 
 def clean_spaces(string):
+    if not isinstance(string,str):
+        return string
     string=string.strip()
     string=re.sub(r'\s+',' ',string)
     return string
-    
+
+def color_diff_visible(a, b,logger):
+    # Replace the space character with a visible symbol (like '␣' or '·')
+    for char in difflib.ndiff(a, b):
+        # Determine the character to display
+        display_char = '␣' if char[2] == ' ' else char[2]
+        
+        # Apply color based on the diff status
+        if char[0] == '-':
+            logger.info(f'\033[91m{display_char}\033[0m', end='')  # Red
+        elif char[0] == '+':
+            logger.info(f'\033[92m{display_char}\033[0m', end='')  # Green
+        else:
+            logger.info(display_char, end='')  # No color
+    print()  # Newline at the end
+
+def check_file(path,logger):
+    clean=np.vectorize(clean_spaces)
+
+    al=pd.read_excel(path / '3318.06' / 'Учет металлов.xlsx', skiprows=3,sheet_name='Алюминий')
+    al=al.drop([0])
+    al=al.drop(['Прибыло (т.)','Убыло (т.)','Состоит (т.)'],axis=1)
+    al=al.set_index('№        документа')
+    al=al.dropna(axis=1)
+
+    fe=pd.read_excel(path / '3318.06' / 'Учет металлов.xlsx', skiprows=3,sheet_name='Черный металл (ЧМ)')
+    fe=fe.drop([0])
+    fe=fe.drop(['Прибыло (т.)','Убыло (т.)','Состоит (т.)'],axis=1)
+    fe=fe.set_index('№        документа')
+    fe=fe.dropna(axis=1)
+    fe=fe.loc[al.index]
+
+    str_col=['Наименование документа','Поставщик','Получатель']
+
+    al[str_col]=clean(al[str_col])
+    fe[str_col]=clean(fe[str_col])
+
+    unmatch=(alv==fev)
+
+    fed=fev[~unmatch].dropna(axis=1,thresh=1)
+    fed=fed[~unmatch].dropna(axis=0,thresh=1)
+    fed=fed.stack()
+
+    ald=alv[~unmatch].dropna(axis=1,thresh=1)
+    ald=ald[~unmatch].dropna(axis=0,thresh=1)
+    ald=ald.stack()
+
+    res=pd.concat([ald,fed],join='inner',axis=1)
+    res.columns=['Железо', "Алюминий"]
+
+    for row in res.index:
+        logger.warning(row)
+        color_diff_visible(res.loc[row,'Железо'], res.loc[row,'Алюминий'],logger)
+
 def main():
     logging.basicConfig(filename='logs.log', level=logging.INFO,format='%(asctime)s %(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
