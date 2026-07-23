@@ -17,7 +17,6 @@ def main():
     back=defaults[0]
     table_path=defaults[1]
     naclad_path=defaults[2]
-    naclad_path='/mnt/c/Users/user/Desktop/учет МЕ Армада/3318.06/накладные/НАКЛАДНЫЕ — копия.docx'
 
     path_tem = Path(__file__).resolve().parent / 'templates' / 'cont 1 af.docx'
     
@@ -26,7 +25,8 @@ def main():
 
     fe_page=metal.fe_page
     fe_page=fe_page[fe_page["Дата записи"].isin(fe_page['Дата записи'].unique()[-back:])]
-
+    if len(fe_page)>0:
+        logger.info(f'Writing {len(fe_page)} накладных')
     for index,row in fe_page.iterrows():
         car=config['cars'][clean_spaces(row['Получатель'])]
         date=row['Дата записи'].strftime('%d.%m.%Y')
